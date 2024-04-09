@@ -45,4 +45,5 @@ impl Lexer {
 
 fn main() {
     println!("Lexing!");
+    
 }
