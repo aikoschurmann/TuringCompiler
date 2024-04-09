@@ -4,11 +4,9 @@ The **Turing Machine Compiler** is a tool designed to compile high-level Turing 
 
 ## Features
 
-- **High-level Language**: Write Turing Machine descriptions using a high-level, human-readable language.
-- **Compiler**: Compile Turing Machine descriptions into machine-readable code for execution.
+- **High-level Language**: generate Turing Machine instructions using a high-level, human-readable language.
+- **Compiler**: Compile codes into machine-readable code for execution.
 - **Simulator Integration**: Integrate with Turing Machine simulators for testing and debugging.
-- **Optimization**: Apply optimizations to generated code for improved performance.
-- **Cross-platform**: Supports multiple platforms, including Windows, macOS, and Linux.
 
 ## Getting Started
 
@@ -17,14 +15,11 @@ The **Turing Machine Compiler** is a tool designed to compile high-level Turing 
 1. Clone the repository from GitHub:
 
     ```bash
-    git clone https://github.com/example/turing-machine-compiler.git
+    git clone [https://github.com/example/turing-machine-compiler.git](https://github.com/aikoschurmann/TuringCompiler
     ```
 
-2. Build the compiler using your preferred build tool (e.g., Cargo for Rust projects).
+2. Build the compiler using your preferred build tool (e.g., Cargo).
 
 ### Usage
 
-To compile a Turing Machine description file, use the following command:
-
-```bash
-tmc compile <input-file> <output-file>
+...
