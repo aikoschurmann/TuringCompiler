@@ -32,8 +32,9 @@ The Turing Machine instruction language supports the following constructs:
 States: Define states and transitions between states.
 Symbols: Define input symbols and transitions based on symbols.
 Actions: Define actions to perform on the tape (e.g., write symbol, move head).
+Comments: Add comments using //.
 
-Here's an example Turing Machine description file:
+Here's an example Turing Machine instruction file:
 
 ```# Description of a Turing Machine to increment a binary number
 # Transition format: <current-state> <read-symbol> <write-symbol> <move-direction> <next-state>
