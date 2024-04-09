@@ -35,7 +35,6 @@ Actions: Define actions to perform on the tape (e.g., write symbol, move head).
 
 Here's an example Turing Machine description file:
 
-#(GO_TOTAL_RIGHT 1 1 right GO_TOTAL_RIGHT)
 ```# Description of a Turing Machine to increment a binary number
 # Transition format: <current-state> <read-symbol> <write-symbol> <move-direction> <next-state>
 
