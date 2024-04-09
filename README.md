@@ -15,7 +15,7 @@ The **Turing Machine Compiler** is a tool designed to compile high-level Turing 
 1. Clone the repository from GitHub:
 
     ```bash
-    git clone [https://github.com/example/turing-machine-compiler.git](https://github.com/aikoschurmann/TuringCompiler
+    git clone https://github.com/aikoschurmann/TuringCompiler
     ```
 
 2. Build the compiler using your preferred build tool (e.g., Cargo).
