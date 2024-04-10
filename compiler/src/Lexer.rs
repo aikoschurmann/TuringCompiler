@@ -1,18 +1,23 @@
+
+#[derive(Default)]
 enum TokenKind {
     Number,
     Operator,
+    #[default]
     Invalid
 }
 
+#[derive(Default)]
 struct Position {
     row : u16,
     col : u16
 }
 
+#[derive(Default)]
 struct Token {
     kind : TokenKind,
     text : String,
-    length : u8
+    length : u8,
     position : Position
 }
 
@@ -37,7 +42,7 @@ impl Lexer {
     }
 
     fn next() -> Token {
-        token Token = {0}
+        let token = Token::default();
         return token
     }
 }
@@ -45,5 +50,4 @@ impl Lexer {
 
 fn main() {
     println!("Lexing!");
-    
 }
