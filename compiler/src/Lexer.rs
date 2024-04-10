@@ -10,8 +10,8 @@ enum TokenKind {
 
 #[derive(Debug, Default)]
 struct Position {
-    row : u16,
-    col : u16
+    row : usize,
+    col : usize
 }
 
 #[derive(Debug, Default)]
@@ -26,7 +26,7 @@ struct Lexer {
     content: String,
     content_length: usize,
     cursor : usize, //absolute
-    line : u16, 
+    line : usize, 
     bol : usize //beginning of line
 }
 
@@ -94,6 +94,8 @@ impl Lexer {
             }
             let text = self.content[start..self.cursor].to_string();
             token.text = text;
+            token.position.col = self.cursor - self.bol;
+            token.position.row = self.line;
             token.kind = TokenKind::Symbol;
             return token
         }
@@ -106,6 +108,8 @@ impl Lexer {
             }
             let text = self.content[start..self.cursor].to_string();
             token.text = text;
+            token.position.col = self.cursor - self.bol;
+            token.position.row = self.line;
             token.kind = TokenKind::Number;
             return token
         }
@@ -115,6 +119,8 @@ impl Lexer {
             let text = self.content.chars().nth(start).unwrap().to_string();
             token.text = text;
             token.kind = TokenKind::Invalid;
+            token.position.col = self.cursor - self.bol;
+            token.position.row = self.line;
             return token
         }
 
@@ -126,7 +132,7 @@ impl Lexer {
 
 fn main() {
     println!("Lexing!");
-    let mut lexer = Lexer::new("test 123 _variable <>".to_string());
+    let mut lexer = Lexer::new("test 123 _variable \n <>".to_string());
     loop {
         let token = lexer.next();
         if token.kind == TokenKind::EOF {
