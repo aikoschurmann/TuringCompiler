@@ -180,7 +180,7 @@ impl Lexer {
                     _ => unreachable!(),
                 }
             }
-            
+
             '+' | '-' | '*' | '/' | '=' | '<' | '>' => {
                 self.match_operator(start, current_char)
             }
