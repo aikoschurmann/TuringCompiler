@@ -13,6 +13,7 @@ enum TokenKind {
     CloseParen,
     OpenParenCurly,
     CloseParenCurly,
+    LineBreak,
     #[default]
     EOF
 }
@@ -57,9 +58,7 @@ impl Lexer {
         let keywords = ["if", "else", "while", "let", "define"];
         lexer.keywords.extend(keywords.iter().map(|s| s.to_string()));
 
-
-
-          lexer
+        lexer
     }
 
     fn create_token(&self, kind: TokenKind, start: usize, length: u16) -> Token {
@@ -170,23 +169,22 @@ impl Lexer {
                 }
                 self.create_token(TokenKind::Comment, start, (self.cursor - start) as u16)
             }
-            '(' | ')' | '{' | '}' => {
+            '(' | ')' | '{' | '}' | ';' => {
                 self.cursor += 1;
                 match current_char {
                     '(' => self.create_token(TokenKind::OpenParen, start, 1),
                     ')' => self.create_token(TokenKind::CloseParen, start, 1),
                     '{' => self.create_token(TokenKind::OpenParenCurly, start, 1),
                     '}' => self.create_token(TokenKind::CloseParenCurly, start, 1),
+                    ';' => self.create_token(TokenKind::LineBreak, start, 1),
                     _ => unreachable!(),
                 }
             }
-            '+' | '-' | '*' | '/' | '=' => {
+            
+            '+' | '-' | '*' | '/' | '=' | '<' | '>' => {
                 self.match_operator(start, current_char)
             }
             
-            '<' | '>'  => {
-                self.match_operator(start, current_char)
-            }
             _ => {
                 if self.is_symbol_start(current_char) {
                     self.handle_symbol(start)
