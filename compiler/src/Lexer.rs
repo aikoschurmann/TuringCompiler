@@ -1,10 +1,10 @@
-
 #[derive(Default)]
 enum TokenKind {
     Number,
     Operator,
+    Invalid,
     #[default]
-    Invalid
+    EOF
 }
 
 #[derive(Default)]
@@ -41,8 +41,17 @@ impl Lexer {
         }
     }
 
-    fn next() -> Token {
+    fn next(&self) -> Token {
         let token = Token::default();
+
+        if self.cursor >= self.content_length {
+            return Token {
+                kind: TokenKind::EOF,
+                length: 0,
+                position: Position::default(),
+                text: String::new(), // Empty string instead of null
+            };
+        }
         return token
     }
 }
