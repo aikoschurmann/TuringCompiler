@@ -27,7 +27,7 @@ struct Lexer {
     content_length: usize,
     cursor : usize, //absolute
     line : u16, 
-    bol : u16 //beginning of line
+    bol : usize //beginning of line
 }
 
 
@@ -48,7 +48,13 @@ impl Lexer {
 
     fn skip_whitespace(&mut self) {
         while self.cursor < self.content_length && self.is_whitespace(self.content.chars().nth(self.cursor as usize).unwrap()) {
+            let x = self.content.chars().nth(self.cursor as usize).unwrap();
             self.cursor += 1;
+
+            if x == '\n' {
+                self.line += 1;
+                self.bol = self.cursor;
+            }  
         }
     }
 
@@ -57,7 +63,7 @@ impl Lexer {
     }
 
     fn is_symbol(&self, x : char) -> bool {
-        return x.is_alphanumeric() || x == '_';
+        return x.is_ascii_alphanumeric() || x == '_';
     }
 
     fn is_number_start(&self, x: char) -> bool {
@@ -70,10 +76,10 @@ impl Lexer {
     fn next(&mut self) -> Token {
         let mut token = Token::default();
 
-        // Skip whitespace
+        // Skip whitespace calculate newlines
         self.skip_whitespace();
 
-        // Check for end of input
+        // Check if past end of input
         if self.cursor >= self.content_length {
             return token;
         }
@@ -103,16 +109,24 @@ impl Lexer {
             token.kind = TokenKind::Number;
             return token
         }
+        if self.cursor < self.content_length {
+            self.cursor += 1;
+            token.length += 1;
+            let text = self.content.chars().nth(start).unwrap().to_string();
+            token.text = text;
+            token.kind = TokenKind::Invalid;
+            return token
+        }
 
-        token.kind = TokenKind::Invalid;
         return token
+
     }
 }
 
 
 fn main() {
     println!("Lexing!");
-    let mut lexer = Lexer::new("test 123 _variable".to_string());
+    let mut lexer = Lexer::new("test 123 _variable <>".to_string());
     loop {
         let token = lexer.next();
         if token.kind == TokenKind::EOF {
