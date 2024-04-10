@@ -1,37 +1,39 @@
-#[derive(Default)]
+#[derive(Debug, Default, PartialEq)]
 enum TokenKind {
     Number,
     Operator,
     Invalid,
+    Symbol,
     #[default]
     EOF
 }
 
-#[derive(Default)]
+#[derive(Debug, Default)]
 struct Position {
     row : u16,
     col : u16
 }
 
-#[derive(Default)]
+#[derive(Debug, Default)]
 struct Token {
     kind : TokenKind,
     text : String,
-    length : u8,
+    length : u16,
     position : Position
 }
 
 struct Lexer {
     content: String,
-    content_length: u8,
-    cursor : u8, //absolute
-    line : u8, 
-    bol : u8 //beginning of line
+    content_length: usize,
+    cursor : usize, //absolute
+    line : u16, 
+    bol : u16 //beginning of line
 }
 
 
 impl Lexer {
-    fn new(content : String, content_length : u8) -> Lexer {
+    fn new(content : String) -> Lexer {
+        let content_length = content.len() as usize;
         Lexer {
             content,
             content_length,
@@ -40,18 +42,69 @@ impl Lexer {
             bol : 0
         }
     }
+    fn is_whitespace(&self, x: char) -> bool {
+        x.is_whitespace()
+    }
 
-    fn next(&self) -> Token {
-        let token = Token::default();
-
-        if self.cursor >= self.content_length {
-            return Token {
-                kind: TokenKind::EOF,
-                length: 0,
-                position: Position::default(),
-                text: String::new(), // Empty string instead of null
-            };
+    fn skip_whitespace(&mut self) {
+        while self.cursor < self.content_length && self.is_whitespace(self.content.chars().nth(self.cursor as usize).unwrap()) {
+            self.cursor += 1;
         }
+    }
+
+    fn is_symbol_start(&self, x : char) -> bool {
+        return x.is_alphabetic() || x == '_';
+    }
+
+    fn is_symbol(&self, x : char) -> bool {
+        return x.is_alphanumeric() || x == '_';
+    }
+
+    fn is_number_start(&self, x: char) -> bool {
+        x.is_ascii_digit() || x == '.'
+    }
+
+    fn is_number(&self, x: char) -> bool {
+        x.is_ascii_digit() || x == '.' || x == 'e' || x == 'E'
+    }
+    fn next(&mut self) -> Token {
+        let mut token = Token::default();
+
+        // Skip whitespace
+        self.skip_whitespace();
+
+        // Check for end of input
+        if self.cursor >= self.content_length {
+            return token;
+        }
+
+        let start = self.cursor;
+
+        // Check for symbol
+        if self.is_symbol_start(self.content.chars().nth(self.cursor).unwrap()) {
+            while self.cursor < self.content_length && self.is_symbol(self.content.chars().nth(self.cursor).unwrap()) {
+                self.cursor += 1;
+                token.length += 1;
+            }
+            let text = self.content[start..self.cursor].to_string();
+            token.text = text;
+            token.kind = TokenKind::Symbol;
+            return token
+        }
+
+        // Check for number
+        if self.is_number_start(self.content.chars().nth(self.cursor).unwrap()) {
+            while self.cursor < self.content_length && self.is_number(self.content.chars().nth(self.cursor).unwrap()) {
+                self.cursor += 1;
+                token.length += 1;
+            }
+            let text = self.content[start..self.cursor].to_string();
+            token.text = text;
+            token.kind = TokenKind::Number;
+            return token
+        }
+
+        token.kind = TokenKind::Invalid;
         return token
     }
 }
@@ -59,4 +112,12 @@ impl Lexer {
 
 fn main() {
     println!("Lexing!");
+    let mut lexer = Lexer::new("test 123 _variable".to_string());
+    loop {
+        let token = lexer.next();
+        if token.kind == TokenKind::EOF {
+            break;
+        }
+        println!("{:?}", token);
+    }
 }
