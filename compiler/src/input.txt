@@ -1,0 +1,7 @@
+let a = 5
+
+define test (int a) {
+    print(a)
+}
+
+test(a)

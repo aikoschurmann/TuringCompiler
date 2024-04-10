@@ -1,4 +1,5 @@
 use std::collections::HashSet;
+use std::fs;
 
 #[derive(Debug, Default, PartialEq)]
 enum TokenKind {
@@ -10,6 +11,8 @@ enum TokenKind {
     Comment,
     OpenParen,
     CloseParen,
+    OpenParenCurly,
+    CloseParenCurly,
     #[default]
     EOF
 }
@@ -156,7 +159,24 @@ impl Lexer {
             }
             ')' => {
                 self.advance_cursor(1);
-                self.create_token(TokenKind::CloseParen, start,1)
+                self.create_token(TokenKind::CloseParen, start, 1)
+            }
+            '{' => {
+                self.advance_cursor(1);
+                self.create_token(TokenKind::OpenParenCurly, start, 1)
+            }
+            '}' => {
+                self.advance_cursor(1);
+                self.create_token(TokenKind::CloseParenCurly, start, 1)
+            }
+            '=' | '<' | '>' => {
+                self.advance_cursor(1);
+                if self.cursor < self.content_length && self.content.chars().nth(self.cursor).unwrap() == '=' {
+                    self.advance_cursor(1);
+                    self.create_token(TokenKind::Operator, start, 2)
+                } else {
+                    self.create_token(TokenKind::Operator, start, 1)
+                }
             }
             _ => {
                 if self.is_symbol_start(self.content.chars().nth(self.cursor).unwrap()) {
@@ -176,7 +196,10 @@ impl Lexer {
 
 fn main() {
     println!("Lexing!");
-    let mut lexer = Lexer::new("test let 123 _variable () \n <> # he(llo how are) ya?\n test".to_string());
+
+    let code = fs::read_to_string("input.txt").unwrap();
+
+    let mut lexer = Lexer::new(code);
     loop {
         let token = lexer.next();
         if token.kind == TokenKind::EOF {
