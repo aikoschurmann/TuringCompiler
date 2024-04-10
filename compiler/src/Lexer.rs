@@ -53,12 +53,10 @@ impl Lexer {
             keywords: HashSet::new()
         };
 
-          // Add keywords to the HashSet
-          lexer.keywords.insert(String::from("if"));
-          lexer.keywords.insert(String::from("else"));
-          lexer.keywords.insert(String::from("while"));
-          lexer.keywords.insert(String::from("let"));
-          lexer.keywords.insert(String::from("define"));
+        // Add keywords to the HashSet
+        let keywords = ["if", "else", "while", "let", "define"];
+        lexer.keywords.extend(keywords.iter().map(|s| s.to_string()));
+
 
 
           lexer
@@ -134,82 +132,65 @@ impl Lexer {
         self.create_token(TokenKind::Number, start, (self.cursor - start) as u16)
     }
 
+    fn match_operator(&mut self, start: usize, op: char) -> Token {
+        self.advance_cursor(1);
+
+        if self.cursor < self.content_length && self.content.chars().nth(self.cursor).unwrap() == '=' {
+            self.advance_cursor(1);
+            self.create_token(TokenKind::Operator, start, 2)
+        } else if op == '+' || op == '-' {
+            if self.cursor < self.content_length && self.content.chars().nth(self.cursor).unwrap() == op {
+                self.advance_cursor(1);
+                self.create_token(TokenKind::Operator, start, 2)
+            } else {
+                self.create_token(TokenKind::Operator, start, 1)
+            }
+        } else {
+            self.create_token(TokenKind::Operator, start, 1)
+        }
+    }
+
     // Main logic to process the next token
     fn next(&mut self) -> Token {
         // Skip whitespace calculate newlines
         self.skip_whitespace();
-
+    
         // Check if past end of input EOF
         if self.cursor >= self.content_length {
             return Token::default();
         }
-
+    
         let start = self.cursor;
-
-        match self.content.chars().nth(self.cursor).unwrap() {
+        let current_char = self.content.chars().nth(start).unwrap(); // Store the current character
+    
+        match current_char {
             '#' => {
-                while self.cursor < self.content_length && self.content.chars().nth(self.cursor).unwrap() != '\n' {
-                    self.advance_cursor(1)
+                while self.cursor < self.content_length && current_char != '\n' {
+                    self.advance_cursor(1);
                 }
                 self.create_token(TokenKind::Comment, start, (self.cursor - start) as u16)
             }
-            '(' => {
-                self.advance_cursor(1);
-                self.create_token(TokenKind::OpenParen, start, 1)
-            }
-            ')' => {
-                self.advance_cursor(1);
-                self.create_token(TokenKind::CloseParen, start, 1)
-            }
-            '{' => {
-                self.advance_cursor(1);
-                self.create_token(TokenKind::OpenParenCurly, start, 1)
-            }
-            '}' => {
-                self.advance_cursor(1);
-                self.create_token(TokenKind::CloseParenCurly, start, 1)
-            }
-            '+'   => {
-                self.advance_cursor(1);
-                if self.cursor < self.content_length && (self.content.chars().nth(self.cursor).unwrap() == '=' || self.content.chars().nth(self.cursor).unwrap() == '+') {
-                    self.advance_cursor(1);
-                    self.create_token(TokenKind::Operator, start, 2)
-                } else {
-                    self.create_token(TokenKind::Operator, start, 1)
+            '(' | ')' | '{' | '}' => {
+                self.cursor += 1;
+                match current_char {
+                    '(' => self.create_token(TokenKind::OpenParen, start, 1),
+                    ')' => self.create_token(TokenKind::CloseParen, start, 1),
+                    '{' => self.create_token(TokenKind::OpenParenCurly, start, 1),
+                    '}' => self.create_token(TokenKind::CloseParenCurly, start, 1),
+                    _ => unreachable!(),
                 }
             }
-            '-'   => {
-                self.advance_cursor(1);
-                if self.cursor < self.content_length && (self.content.chars().nth(self.cursor).unwrap() == '=' || self.content.chars().nth(self.cursor).unwrap() == '-') {
-                    self.advance_cursor(1);
-                    self.create_token(TokenKind::Operator, start, 2)
-                } else {
-                    self.create_token(TokenKind::Operator, start, 1)
-                }
-            }
-            '*' | '/'  => {
-                self.advance_cursor(1);
-                if self.cursor < self.content_length && self.content.chars().nth(self.cursor).unwrap() == '=' {
-                    self.advance_cursor(1);
-                    self.create_token(TokenKind::Operator, start, 2)
-                } else {
-                    self.create_token(TokenKind::Operator, start, 1)
-                }
+            '+' | '-' | '*' | '/' | '=' => {
+                self.match_operator(start, current_char)
             }
             
-            '=' | '<' | '>'  => {
-                self.advance_cursor(1);
-                if self.cursor < self.content_length && self.content.chars().nth(self.cursor).unwrap() == '=' {
-                    self.advance_cursor(1);
-                    self.create_token(TokenKind::Operator, start, 2)
-                } else {
-                    self.create_token(TokenKind::Operator, start, 1)
-                }
+            '<' | '>'  => {
+                self.match_operator(start, current_char)
             }
             _ => {
-                if self.is_symbol_start(self.content.chars().nth(self.cursor).unwrap()) {
+                if self.is_symbol_start(current_char) {
                     self.handle_symbol(start)
-                } else if self.is_number_start(self.content.chars().nth(self.cursor).unwrap()) {
+                } else if self.is_number_start(current_char) {
                     self.handle_number(start)
                 } else {
                     self.advance_cursor(1);
@@ -217,6 +198,21 @@ impl Lexer {
                 }
             }
         }
+    }
+    
+
+    fn tokenize(&mut self) -> Vec<Token> {
+        let mut tokens = Vec::new();
+
+        loop {
+            let token = self.next();
+            if token.kind == TokenKind::EOF {
+                break;
+            }
+            tokens.push(token);
+        }
+
+        tokens
     }
 }
 
@@ -226,13 +222,11 @@ fn main() {
     println!("Lexing!");
 
     let code = fs::read_to_string("input.txt").unwrap();
-
     let mut lexer = Lexer::new(code);
-    loop {
-        let token = lexer.next();
-        if token.kind == TokenKind::EOF {
-            break;
-        }
+
+    let tokens = lexer.tokenize();
+
+    for token in tokens {
         println!("{:?}", token);
     }
 }
