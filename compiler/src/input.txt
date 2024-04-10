@@ -1,7 +1,7 @@
 let a = 5
 
 define test (int a) {
-    print(a)
+    print(a * 6)
 }
-
+a ++
 test(a)

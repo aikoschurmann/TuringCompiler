@@ -3,6 +3,6 @@ name = "TuringCompiler"
 version = "0.1.0"
 edition = "2021"
 
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
-
-[dependencies]
+[[bin]]
+name = "turing_compiler"   # Name of your executable
+path = "src/Lexer.rs"       # Path to your main source file

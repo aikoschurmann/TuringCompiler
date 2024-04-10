@@ -169,7 +169,35 @@ impl Lexer {
                 self.advance_cursor(1);
                 self.create_token(TokenKind::CloseParenCurly, start, 1)
             }
-            '=' | '<' | '>' => {
+            '+'   => {
+                self.advance_cursor(1);
+                if self.cursor < self.content_length && (self.content.chars().nth(self.cursor).unwrap() == '=' || self.content.chars().nth(self.cursor).unwrap() == '+') {
+                    self.advance_cursor(1);
+                    self.create_token(TokenKind::Operator, start, 2)
+                } else {
+                    self.create_token(TokenKind::Operator, start, 1)
+                }
+            }
+            '-'   => {
+                self.advance_cursor(1);
+                if self.cursor < self.content_length && (self.content.chars().nth(self.cursor).unwrap() == '=' || self.content.chars().nth(self.cursor).unwrap() == '-') {
+                    self.advance_cursor(1);
+                    self.create_token(TokenKind::Operator, start, 2)
+                } else {
+                    self.create_token(TokenKind::Operator, start, 1)
+                }
+            }
+            '*' | '/'  => {
+                self.advance_cursor(1);
+                if self.cursor < self.content_length && self.content.chars().nth(self.cursor).unwrap() == '=' {
+                    self.advance_cursor(1);
+                    self.create_token(TokenKind::Operator, start, 2)
+                } else {
+                    self.create_token(TokenKind::Operator, start, 1)
+                }
+            }
+            
+            '=' | '<' | '>'  => {
                 self.advance_cursor(1);
                 if self.cursor < self.content_length && self.content.chars().nth(self.cursor).unwrap() == '=' {
                     self.advance_cursor(1);
