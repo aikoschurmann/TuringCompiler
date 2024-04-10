@@ -4,6 +4,9 @@ enum TokenKind {
     Operator,
     Invalid,
     Symbol,
+    Comment,
+    OpenParen,
+    CloseParen,
     #[default]
     EOF
 }
@@ -42,6 +45,18 @@ impl Lexer {
             bol : 0
         }
     }
+
+    fn create_token(&self, kind: TokenKind, start: usize, length: u16) -> Token {
+        let text = self.content[start..(start + length as usize)].to_string();
+        let mut token = Token::default();
+        token.text = text;
+        token.position.col = start - self.bol;
+        token.position.row = self.line;
+        token.length = length;
+        token.kind = kind;
+        token
+    }
+
     fn is_whitespace(&self, x: char) -> bool {
         x.is_whitespace()
     }
@@ -73,66 +88,75 @@ impl Lexer {
     fn is_number(&self, x: char) -> bool {
         x.is_ascii_digit() || x == '.' || x == 'e' || x == 'E'
     }
-    fn next(&mut self) -> Token {
-        let mut token = Token::default();
+    
 
+    // Helper method to advance cursor and token length
+    fn advance_cursor(&mut self, length: u16) {
+        self.cursor += length as usize;
+    }
+
+    // Helper method to handle symbol token
+    fn handle_symbol(&mut self, start: usize) -> Token {
+        while self.cursor < self.content_length && self.is_symbol(self.content.chars().nth(self.cursor).unwrap()) {
+            self.cursor += 1;
+        }
+        self.create_token(TokenKind::Symbol, start, (self.cursor - start) as u16)
+    }
+
+    // Helper method to handle number token
+    fn handle_number(&mut self, start: usize) -> Token {
+        while self.cursor < self.content_length && self.is_number(self.content.chars().nth(self.cursor).unwrap()) {
+            self.cursor += 1;
+        }
+        self.create_token(TokenKind::Number, start, (self.cursor - start) as u16)
+    }
+
+    // Main logic to process the next token
+    fn next(&mut self) -> Token {
         // Skip whitespace calculate newlines
         self.skip_whitespace();
 
-        // Check if past end of input
+        // Check if past end of input EOF
         if self.cursor >= self.content_length {
-            return token;
+            return Token::default();
         }
 
         let start = self.cursor;
 
-        // Check for symbol
-        if self.is_symbol_start(self.content.chars().nth(self.cursor).unwrap()) {
-            while self.cursor < self.content_length && self.is_symbol(self.content.chars().nth(self.cursor).unwrap()) {
-                self.cursor += 1;
-                token.length += 1;
+        match self.content.chars().nth(self.cursor).unwrap() {
+            '#' => {
+                while self.cursor < self.content_length && self.content.chars().nth(self.cursor).unwrap() != '\n' {
+                    self.advance_cursor(1)
+                }
+                self.create_token(TokenKind::Comment, start, (self.cursor - start) as u16)
             }
-            let text = self.content[start..self.cursor].to_string();
-            token.text = text;
-            token.position.col = self.cursor - self.bol;
-            token.position.row = self.line;
-            token.kind = TokenKind::Symbol;
-            return token
-        }
-
-        // Check for number
-        if self.is_number_start(self.content.chars().nth(self.cursor).unwrap()) {
-            while self.cursor < self.content_length && self.is_number(self.content.chars().nth(self.cursor).unwrap()) {
-                self.cursor += 1;
-                token.length += 1;
+            '(' => {
+                self.advance_cursor(1);
+                self.create_token(TokenKind::OpenParen, start, 1)
             }
-            let text = self.content[start..self.cursor].to_string();
-            token.text = text;
-            token.position.col = self.cursor - self.bol;
-            token.position.row = self.line;
-            token.kind = TokenKind::Number;
-            return token
+            ')' => {
+                self.advance_cursor(1);
+                self.create_token(TokenKind::CloseParen, start, 1)
+            }
+            _ => {
+                if self.is_symbol_start(self.content.chars().nth(self.cursor).unwrap()) {
+                    self.handle_symbol(start)
+                } else if self.is_number_start(self.content.chars().nth(self.cursor).unwrap()) {
+                    self.handle_number(start)
+                } else {
+                    self.advance_cursor(1);
+                    self.create_token(TokenKind::Invalid, start, 1)
+                }
+            }
         }
-        if self.cursor < self.content_length {
-            self.cursor += 1;
-            token.length += 1;
-            let text = self.content.chars().nth(start).unwrap().to_string();
-            token.text = text;
-            token.kind = TokenKind::Invalid;
-            token.position.col = self.cursor - self.bol;
-            token.position.row = self.line;
-            return token
-        }
-
-        return token
-
     }
 }
 
 
+
 fn main() {
     println!("Lexing!");
-    let mut lexer = Lexer::new("test 123 _variable \n <>".to_string());
+    let mut lexer = Lexer::new("test 123 _variable () \n <> # he(llo how are) ya?\n test".to_string());
     loop {
         let token = lexer.next();
         if token.kind == TokenKind::EOF {
