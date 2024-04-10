@@ -1,9 +1,12 @@
+use std::collections::HashSet;
+
 #[derive(Debug, Default, PartialEq)]
 enum TokenKind {
     Number,
     Operator,
     Invalid,
     Symbol,
+    Keyword,
     Comment,
     OpenParen,
     CloseParen,
@@ -30,20 +33,32 @@ struct Lexer {
     content_length: usize,
     cursor : usize, //absolute
     line : usize, 
-    bol : usize //beginning of line
+    bol : usize, //beginning of line
+    keywords: HashSet<String>, // Store keywords in a HashSet
 }
 
 
 impl Lexer {
     fn new(content : String) -> Lexer {
         let content_length = content.len() as usize;
-        Lexer {
+        let mut lexer = Lexer {
             content,
             content_length,
             cursor : 0,
             line: 0,
-            bol : 0
-        }
+            bol : 0,
+            keywords: HashSet::new()
+        };
+
+          // Add keywords to the HashSet
+          lexer.keywords.insert(String::from("if"));
+          lexer.keywords.insert(String::from("else"));
+          lexer.keywords.insert(String::from("while"));
+          lexer.keywords.insert(String::from("let"));
+          lexer.keywords.insert(String::from("define"));
+
+
+          lexer
     }
 
     fn create_token(&self, kind: TokenKind, start: usize, length: u16) -> Token {
@@ -89,7 +104,6 @@ impl Lexer {
         x.is_ascii_digit() || x == '.' || x == 'e' || x == 'E'
     }
     
-
     // Helper method to advance cursor and token length
     fn advance_cursor(&mut self, length: u16) {
         self.cursor += length as usize;
@@ -100,7 +114,13 @@ impl Lexer {
         while self.cursor < self.content_length && self.is_symbol(self.content.chars().nth(self.cursor).unwrap()) {
             self.cursor += 1;
         }
-        self.create_token(TokenKind::Symbol, start, (self.cursor - start) as u16)
+        let length = self.cursor - start;
+        let text = self.content[start..(start + length as usize)].to_string();
+        if self.keywords.contains(&text) {
+            return self.create_token(TokenKind::Keyword, start, length as u16)
+        }
+        return self.create_token(TokenKind::Symbol, start, (self.cursor - start) as u16)
+        
     }
 
     // Helper method to handle number token
@@ -136,7 +156,7 @@ impl Lexer {
             }
             ')' => {
                 self.advance_cursor(1);
-                self.create_token(TokenKind::CloseParen, start, 1)
+                self.create_token(TokenKind::CloseParen, start,1)
             }
             _ => {
                 if self.is_symbol_start(self.content.chars().nth(self.cursor).unwrap()) {
@@ -156,7 +176,7 @@ impl Lexer {
 
 fn main() {
     println!("Lexing!");
-    let mut lexer = Lexer::new("test 123 _variable () \n <> # he(llo how are) ya?\n test".to_string());
+    let mut lexer = Lexer::new("test let 123 _variable () \n <> # he(llo how are) ya?\n test".to_string());
     loop {
         let token = lexer.next();
         if token.kind == TokenKind::EOF {
