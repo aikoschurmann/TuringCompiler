@@ -5,4 +5,4 @@ edition = "2021"
 
 [[bin]]
 name = "turing_compiler"   # Name of your executable
-path = "src/Lexer.rs"       # Path to your main source file
+path = "src/AST.rs"       # Path to your main source file

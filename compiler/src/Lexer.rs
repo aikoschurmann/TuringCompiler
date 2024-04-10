@@ -2,7 +2,7 @@ use std::collections::HashSet;
 use std::fs;
 
 #[derive(Debug, Default, PartialEq)]
-enum TokenKind {
+pub enum TokenKind {
     Number,
     Operator,
     Invalid,
@@ -25,14 +25,14 @@ struct Position {
 }
 
 #[derive(Debug, Default)]
-struct Token {
+pub struct Token {
     kind : TokenKind,
     text : String,
     length : u16,
     position : Position
 }
 
-struct Lexer {
+pub struct Lexer {
     content: String,
     content_length: usize,
     cursor : usize, //absolute
@@ -40,7 +40,6 @@ struct Lexer {
     bol : usize, //beginning of line
     keywords: HashSet<String>, // Store keywords in a HashSet
 }
-
 
 impl Lexer {
     fn new(content : String) -> Lexer {
@@ -198,7 +197,6 @@ impl Lexer {
         }
     }
     
-
     fn tokenize(&mut self) -> Vec<Token> {
         let mut tokens = Vec::new();
 
@@ -213,8 +211,6 @@ impl Lexer {
         tokens
     }
 }
-
-
 
 fn main() {
     println!("Lexing!");
