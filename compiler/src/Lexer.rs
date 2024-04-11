@@ -28,7 +28,7 @@ pub struct Position {
 pub struct Token {
     pub kind : TokenKind,
     pub text : String,
-    pub length : u16,
+    pub length : usize,
     pub position : Position
 }
 
@@ -60,11 +60,11 @@ impl Lexer {
         lexer
     }
 
-    pub fn create_token(&self, kind: TokenKind, start: usize, length: u16) -> Token {
+    pub fn create_token(&self, kind: TokenKind, start: usize, length: usize) -> Token {
         let text = self.content[start..(start + length as usize)].to_string();
         let mut token = Token::default();
         token.text = text;
-        token.position.col = start - self.bol;
+        token.position.col = start - self.bol + 1;
         token.position.row = self.line;
         token.length = length;
         token.kind = kind;
@@ -116,9 +116,9 @@ impl Lexer {
         let length = self.cursor - start;
         let text = self.content[start..(start + length as usize)].to_string();
         if self.keywords.contains(&text) {
-            return self.create_token(TokenKind::Keyword, start, length as u16)
+            return self.create_token(TokenKind::Keyword, start, length)
         }
-        return self.create_token(TokenKind::Symbol, start, (self.cursor - start) as u16)
+        return self.create_token(TokenKind::Symbol, start, self.cursor - start)
         
     }
 
@@ -127,7 +127,7 @@ impl Lexer {
         while self.cursor < self.content_length && self.is_number(self.content.chars().nth(self.cursor).unwrap()) {
             self.cursor += 1;
         }
-        self.create_token(TokenKind::Number, start, (self.cursor - start) as u16)
+        self.create_token(TokenKind::Number, start, self.cursor - start)
     }
 
     fn match_operator(&mut self, start: usize, op: char) -> Token {
@@ -166,7 +166,7 @@ impl Lexer {
                 while self.cursor < self.content_length && current_char != '\n' {
                     self.advance_cursor(1);
                 }
-                self.create_token(TokenKind::Comment, start, (self.cursor - start) as u16)
+                self.create_token(TokenKind::Comment, start, self.cursor - start)
             }
             '(' | ')' | '{' | '}' | ';' => {
                 self.cursor += 1;
@@ -209,18 +209,5 @@ impl Lexer {
         }
 
         tokens
-    }
-}
-
-fn main() {
-    println!("Lexing!");
-
-    let code = fs::read_to_string("input.txt").unwrap();
-    let mut lexer = Lexer::new(code);
-
-    let tokens = lexer.tokenize();
-
-    for token in tokens {
-        println!("{:?}", token);
     }
 }
