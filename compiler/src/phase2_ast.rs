@@ -1,4 +1,4 @@
-use crate::lexer::*;
+use crate::phase1_lexer::*;
 use std::fs::File;
 use std::io::{BufRead, BufReader};
 use std::fmt;
@@ -476,6 +476,9 @@ impl Parser {
                     let res = self.handle_equation(&self.tokens[start..self.tokens.len() - 1]);
                     self.advance(1);
                     program.program.push(res);
+                },
+                TokenKind::Comment => {
+                    self.advance(1)
                 },
                 TokenKind::EOF => todo!(),
                 _ => todo!(),

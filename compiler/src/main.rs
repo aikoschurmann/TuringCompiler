@@ -1,11 +1,11 @@
-mod ast;
-mod lexer;
+mod phase2_ast;
+mod phase1_lexer;
 
-use lexer::Lexer;
+use phase1_lexer::Lexer;
 
 use std::fs;
 
-use crate::ast::Parser;
+use crate::phase2_ast::Parser;
 
 
 fn main() {
@@ -16,6 +16,8 @@ fn main() {
     println!("Lexing!");
 
     let tokens = lexer.tokenize();
+    let tokens_json: String = serde_json::to_string_pretty(&tokens).unwrap();
+    fs::write("compiler-steps/step1.json", format!("{}", tokens_json)).unwrap();
 
 
     for token in tokens.clone(){

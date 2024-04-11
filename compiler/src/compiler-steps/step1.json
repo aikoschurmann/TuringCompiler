@@ -1,0 +1,110 @@
+[
+  {
+    "kind": "Keyword",
+    "text": "let",
+    "length": 3,
+    "position": {
+      "row": 0,
+      "col": 1
+    }
+  },
+  {
+    "kind": "Symbol",
+    "text": "a",
+    "length": 1,
+    "position": {
+      "row": 0,
+      "col": 5
+    }
+  },
+  {
+    "kind": "Operator",
+    "text": "=",
+    "length": 1,
+    "position": {
+      "row": 0,
+      "col": 7
+    }
+  },
+  {
+    "kind": "Symbol",
+    "text": "b",
+    "length": 1,
+    "position": {
+      "row": 0,
+      "col": 9
+    }
+  },
+  {
+    "kind": "Operator",
+    "text": "+",
+    "length": 1,
+    "position": {
+      "row": 0,
+      "col": 11
+    }
+  },
+  {
+    "kind": "Number",
+    "text": "6",
+    "length": 1,
+    "position": {
+      "row": 0,
+      "col": 13
+    }
+  },
+  {
+    "kind": "LineBreak",
+    "text": ";",
+    "length": 1,
+    "position": {
+      "row": 0,
+      "col": 14
+    }
+  },
+  {
+    "kind": "Comment",
+    "text": "#test",
+    "length": 5,
+    "position": {
+      "row": 2,
+      "col": 1
+    }
+  },
+  {
+    "kind": "Number",
+    "text": "5",
+    "length": 1,
+    "position": {
+      "row": 3,
+      "col": 1
+    }
+  },
+  {
+    "kind": "Operator",
+    "text": "+",
+    "length": 1,
+    "position": {
+      "row": 3,
+      "col": 3
+    }
+  },
+  {
+    "kind": "Number",
+    "text": "7",
+    "length": 1,
+    "position": {
+      "row": 3,
+      "col": 5
+    }
+  },
+  {
+    "kind": "LineBreak",
+    "text": ";",
+    "length": 1,
+    "position": {
+      "row": 3,
+      "col": 6
+    }
+  }
+]

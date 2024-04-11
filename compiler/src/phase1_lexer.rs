@@ -1,7 +1,7 @@
 use std::collections::HashSet;
+use serde::Serialize;
 
-
-#[derive(Debug, Default, PartialEq, Clone)]
+#[derive(Debug, Default, PartialEq, Clone, Serialize)]
 pub enum TokenKind {
     Number,
     Operator,
@@ -18,13 +18,13 @@ pub enum TokenKind {
     EOF
 }
 
-#[derive(Debug, Default, Clone)]
+#[derive(Debug, Default, Clone, Serialize)]
 pub struct Position {
     pub row : usize,
     pub col : usize
 }
 
-#[derive(Debug, Default, Clone)]
+#[derive(Debug, Default, Clone, Serialize)]
 pub struct Token {
     pub kind : TokenKind,
     pub text : String,
@@ -161,12 +161,13 @@ impl Lexer {
         }
     
         let start = self.cursor;
-        let current_char = self.content.chars().nth(start).unwrap(); // Store the current character
+        let mut current_char = self.content.chars().nth(start).unwrap(); // Store the current character
     
         match current_char {
             '#' => {
                 while self.cursor < self.content_length && current_char != '\n' {
                     self.advance_cursor(1);
+                    current_char = self.content.chars().nth(self.cursor).unwrap(); 
                 }
                 self.create_token(TokenKind::Comment, start, self.cursor - start)
             }
