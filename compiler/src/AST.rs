@@ -1,6 +1,7 @@
-mod Lexer;
+mod lexer;
 
-use Lexer::*;
+use std::fs;
+use lexer::*;
 
 #[derive(Debug)]
 enum Node {
@@ -19,7 +20,7 @@ enum Node {
 
 #[derive(Debug)]
 struct Program {
-    program: Vec<Node>,
+    program: Option<Vec<Node>>,
 }
 
 #[derive(Debug)]
@@ -105,17 +106,67 @@ struct Parser {
     tokens : Vec<Token>,
     length : usize,
     position : usize,
-    current_token : Option<Token>
 }
 
 impl Parser {
-    fn advance(&mut self){
-        if self.position < self.tokens.len() {
-            self.current_token = Some(self.tokens[self.position].clone());
-            self.position += 1;
-        } else {
-            self.current_token = None;
+    fn advance(&mut self, length: usize){
+        self.position += length;
+    }
+    fn handle_assignment(&self) {
+        todo!()
+    }
+    fn handle_if(&self) {
+        todo!()
+    }
+    fn handle_while(&self) {
+        todo!()
+    }
+    fn handle_function_assignment(&self) {
+        todo!()
+    }
+
+    fn handle_keyword(&self, tokens: &[Token]) {
+        match tokens[0].text.as_str() {
+            "let" => self.handle_assignment(),
+            "if" => self.handle_if(),
+            "while" => self.handle_while(),
+            "define" => self.handle_function_assignment(),
+            _ => unreachable!()
         }
+    }
+    
+
+    fn parse(&mut self) -> Program{
+        let mut program = Program { program: Some(Vec::new()) };
+        
+        while self.position < self.length {
+
+            let start = self.position;
+
+            match self.tokens[self.position].kind {
+                TokenKind::Number => todo!(),
+                TokenKind::Operator => todo!(),
+                TokenKind::Invalid => todo!(),
+                TokenKind::Symbol => todo!(),
+                TokenKind::Keyword => {
+                    while self.tokens[self.position].kind != TokenKind::LineBreak {
+                        self.advance(1)
+                    }
+                
+                    self.handle_keyword(&self.tokens[start..=self.position]);
+
+                },
+                TokenKind::Comment => todo!(),
+                TokenKind::OpenParen => todo!(),
+                TokenKind::CloseParen => todo!(),
+                TokenKind::OpenParenCurly => todo!(),
+                TokenKind::CloseParenCurly => todo!(),
+                TokenKind::LineBreak => todo!(),
+                TokenKind::EOF => todo!(),
+            } 
+        }
+
+        program
     }
 
     fn new(tokens: Vec<Token>) -> Parser{
@@ -124,7 +175,6 @@ impl Parser {
             tokens,
             length,
             position : 0,
-            current_token : None
         };
 
         parser
@@ -134,5 +184,20 @@ impl Parser {
 
 
 fn main() {
+    println!("Lexing!");
+
+    let code = fs::read_to_string("input.txt").unwrap();
+    let mut lexer = Lexer::new(code);
+
+    let tokens = lexer.tokenize();
+
+    for token in &tokens {
+        println!("{:?}", token);
+    }
+
     println!("Building a tree!");
+    let mut parser = Parser::new(tokens);
+
+    let _ast = parser.parse();
+
 }

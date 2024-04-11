@@ -1,7 +1,7 @@
 use std::collections::HashSet;
 use std::fs;
 
-#[derive(Debug, Default, PartialEq)]
+#[derive(Debug, Default, PartialEq, Clone)]
 pub enum TokenKind {
     Number,
     Operator,
@@ -18,18 +18,18 @@ pub enum TokenKind {
     EOF
 }
 
-#[derive(Debug, Default)]
-struct Position {
-    row : usize,
-    col : usize
+#[derive(Debug, Default, Clone)]
+pub struct Position {
+    pub row : usize,
+    pub col : usize
 }
 
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct Token {
-    kind : TokenKind,
-    text : String,
-    length : u16,
-    position : Position
+    pub kind : TokenKind,
+    pub text : String,
+    pub length : u16,
+    pub position : Position
 }
 
 pub struct Lexer {
@@ -42,7 +42,7 @@ pub struct Lexer {
 }
 
 impl Lexer {
-    fn new(content : String) -> Lexer {
+    pub fn new(content : String) -> Lexer {
         let content_length = content.len() as usize;
         let mut lexer = Lexer {
             content,
@@ -54,13 +54,13 @@ impl Lexer {
         };
 
         // Add keywords to the HashSet
-        let keywords = ["if", "else", "while", "let", "define"];
+        let keywords = ["if", "else", "while", "let", "define",];
         lexer.keywords.extend(keywords.iter().map(|s| s.to_string()));
 
         lexer
     }
 
-    fn create_token(&self, kind: TokenKind, start: usize, length: u16) -> Token {
+    pub fn create_token(&self, kind: TokenKind, start: usize, length: u16) -> Token {
         let text = self.content[start..(start + length as usize)].to_string();
         let mut token = Token::default();
         token.text = text;
@@ -149,7 +149,7 @@ impl Lexer {
     }
 
     // Main logic to process the next token
-    fn next(&mut self) -> Token {
+    pub fn next(&mut self) -> Token {
         // Skip whitespace calculate newlines
         self.skip_whitespace();
     
@@ -197,7 +197,7 @@ impl Lexer {
         }
     }
     
-    fn tokenize(&mut self) -> Vec<Token> {
+    pub fn tokenize(&mut self) -> Vec<Token> {
         let mut tokens = Vec::new();
 
         loop {

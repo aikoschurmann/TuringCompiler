@@ -1,4 +1,1 @@
-let a = 5;
-define test(a){
-    display(a);
-}
+let a = (6 + 7);
