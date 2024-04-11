@@ -86,6 +86,7 @@ impl Lexer {
             }  
         }
     }
+    
 
     fn is_symbol_start(&self, x : char) -> bool {
         return x.is_alphabetic() || x == '_';
