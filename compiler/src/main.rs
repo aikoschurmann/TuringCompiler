@@ -5,6 +5,10 @@ use std::fs;
 use lexer::*;
 use ast::*;
 
+
+extern crate serde;
+
+
 fn main() {
     let code = fs::read_to_string("input.txt").unwrap();
     let mut lexer = Lexer::new(code.clone());

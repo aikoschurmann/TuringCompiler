@@ -8,5 +8,6 @@ name = "turing_compiler"   # Name of your executable
 path = "src/main.rs"       # Path to your main source file
 
 [dependencies]
-serde = { version = "1.0", features = ["derive"] }
-serde_json = "1.0"
+serde = { version = "1.0.144", features = ["derive"] }
+serde_json = "1.0.85"
+
