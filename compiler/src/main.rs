@@ -1,12 +1,11 @@
-mod lexer;
 mod ast;
+mod lexer;
+
+use lexer::Lexer;
 
 use std::fs;
-use lexer::*;
-use ast::*;
 
-
-extern crate serde;
+use crate::ast::Parser;
 
 
 fn main() {
@@ -28,7 +27,8 @@ fn main() {
 
     let mut parser = Parser::new(tokens.clone());
     let _ast = parser.parse();
-    let ast_json: String = serde_json::to_string(&_ast).unwrap();
+    let ast_json: String = serde_json::to_string_pretty(&_ast).unwrap();
+    fs::write("compiler-steps/step2.json", format!("{}", ast_json)).unwrap();
 
 
     println!("{:?}", _ast)
