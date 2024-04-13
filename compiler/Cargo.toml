@@ -1,11 +1,11 @@
 [package]
-name = "TuringCompiler"
+name = "turing_compiler"   # Name of your executable
 version = "0.1.0"
 edition = "2021"
 
 [[bin]]
 name = "turing_compiler"   # Name of your executable
-path = "src/main.rs"       # Path to your main source file
+path = "src/1Lexer/test.rs"       # Path to your main source file
 
 [dependencies]
 serde = { version = "1.0.144", features = ["derive"] }

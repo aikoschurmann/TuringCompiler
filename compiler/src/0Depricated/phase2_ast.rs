@@ -1,7 +1,7 @@
 use crate::phase1_lexer::*;
 use std::fs::File;
 use std::io::{BufRead, BufReader};
-use std::fmt;
+use std::{clone, fmt};
 
 
 
@@ -28,6 +28,8 @@ impl fmt::Display for Operator {
             Operator::Exp => "^",
             Operator::OpenParen => "(",
             Operator::CloseParen => ")",
+            Operator::Or => "or",
+            Operator::And => "and",
         };
         write!(f, "{}", op_str)
     }
@@ -64,7 +66,6 @@ pub enum Node {
     UnaryExpression(UnaryExpression),
     IfStatement(IfStatement),
     WhileStatement(WhileStatement),
-    LogicalExpression(LogicalExpression),
 }
 
 #[derive(Debug, Serialize)]
@@ -76,6 +77,8 @@ pub enum InitExpression {
 
 #[derive(Debug, Clone, Copy, PartialEq, PartialOrd)]
 pub enum Precedence {
+    ExtremelyLow,
+    VeryLow,
     Low,
     Medium,
     High,
@@ -83,7 +86,9 @@ pub enum Precedence {
 
 fn precedence(op: &Operator) -> Precedence {
     match op {
-        Operator::Add | Operator::Subtract | Operator::OpenParen  => Precedence::Low,
+        Operator::Or | Operator::And | Operator::OpenParen => Precedence::ExtremelyLow,
+        Operator::Equals | Operator::Greater | Operator::Smaller | Operator::SmallerEquals | Operator::GreaterEquals => Precedence::VeryLow,
+        Operator::Add | Operator::Subtract   => Precedence::Low,
         Operator::Multiply | Operator::Divide => Precedence::Medium,
         Operator::Exp => Precedence::High,
         _ => panic!("Unknown operator"),
@@ -104,7 +109,7 @@ pub struct Identifier {
 pub struct FunctionDeclaration {
     id: Identifier,
     params: Vec<Node>,
-    body: Vec<Node>,
+    body: Vec<Program>,
 }
 
 #[derive(Debug, Serialize)]
@@ -113,7 +118,7 @@ pub struct VariableDeclaration {
     init: InitExpression,
 }
 
-#[derive(Debug, Serialize)]
+#[derive(Debug, Serialize, Clone)]
 pub struct Literal {
     raw: String,
 }
@@ -149,7 +154,9 @@ pub enum Operator {
     Greater,
     Exp,
     OpenParen,
-    CloseParen
+    CloseParen,
+    Or,
+    And
 }
 
 #[derive(Debug, Serialize)]
@@ -161,8 +168,8 @@ pub struct UnaryExpression {
 #[derive(Debug, Serialize)]
 pub struct IfStatement {
     test: Box<Node>,
-    consequent: Box<Node>,
-    alternate: Option<Box<Node>>
+    consequent: Vec<Box<Program>>,
+    alternate: Option<Vec<Box<Program>>>
 }
 
 #[derive(Debug, Serialize)]
@@ -171,12 +178,6 @@ pub struct WhileStatement {
     body: Box<Node>,
 }
 
-#[derive(Debug, Serialize)]
-pub struct LogicalExpression {
-    operator : LogicalOperator,
-    left : Box<Node>,
-    right : Box<Node>
-}
 
 pub struct Parser {
     tokens : Vec<Token>,
@@ -233,6 +234,13 @@ impl Parser {
             "*" => Some(Operator::Multiply),
             "/" => Some(Operator::Divide),
             "(" => Some(Operator::OpenParen),
+            "or" => Some(Operator::Or),
+            "and" => Some(Operator::And),
+            "<" => Some(Operator::Smaller),
+            ">" => Some(Operator::Greater),
+            "==" => Some(Operator::Equals),
+            "<=" => Some(Operator::SmallerEquals),
+            ">=" => Some(Operator::GreaterEquals),
             _ => None,
         }
     }
@@ -429,10 +437,70 @@ impl Parser {
         
         VariableDeclaration { id, init }
     }
-    
-    fn handle_if(&self) -> Node {
-        todo!()
+
+    fn handle_condition(&self, tokens: &[Token]) -> Node{
+        return self.handle_equation(tokens);
     }
+    
+    fn handle_if(&self, tokens: &[Token]) -> IfStatement {
+        let mut start = 1 as usize;
+        let mut relative_position = 0 as usize;
+        let relative_length = tokens.len() as usize;
+    
+        while relative_position < relative_length && tokens[relative_position].kind != TokenKind::OpenParenCurly {
+            relative_position += 1;
+        }
+    
+        if relative_position >= relative_length {
+            let current_line = tokens[0].position.row;
+            let statement = self.get_nth_line("input.txt", current_line) + " ";
+            panic!("SyntaxError: expected '{{' at row {}, column {}\n{}\n{}", current_line, statement.len(), statement, self.underline_error(&statement, statement.len() - 1, 1));
+        }
+    
+        let cond = self.handle_condition(&tokens[start..relative_position]);
+        start = relative_position;
+    
+        while relative_position < relative_length && tokens[relative_position].kind != TokenKind::CloseParenCurly {
+            relative_position += 1;
+        }
+    
+        if relative_position >= relative_length {
+            let current_line = tokens[0].position.row;
+            let statement = self.get_nth_line("input.txt", current_line) + " ";
+            panic!("SyntaxError: expected '}}' at row {}, column {}\n{}\n{}", current_line, statement.len(), statement, self.underline_error(&statement, statement.len() - 1, 1));
+        }
+    
+        let mut consequent = Vec::new();
+        if relative_position > start + 1 {
+            let body_tokens = &tokens[start + 1..relative_position];
+            let mut parser = Parser::new(body_tokens.to_vec());
+            consequent.push(Box::new(parser.parse()));
+        }
+    
+        let mut alternate = None;
+        if relative_position < relative_length - 1 {
+            let rest_tokens = &tokens[relative_position + 1..];
+            if !rest_tokens.is_empty() && rest_tokens[0].text == "else" {
+                if rest_tokens.len() > 1 {
+                    let else_body_tokens = &rest_tokens[2..]; // Skip 'else' and '{'
+                    let mut parser = Parser::new(else_body_tokens.to_vec());
+                    alternate = Some(vec![Box::new(parser.parse())]);
+                } else {
+                    let current_line = tokens[0].position.row;
+                    let statement = self.get_nth_line("input.txt", current_line) + " ";
+                    panic!("SyntaxError: expected '{{' or statement after 'else' at row {}, column {}\n{}\n{}", current_line, statement.len(), statement, self.underline_error(&statement, statement.len() - 1, 1));
+                }
+            }
+        }
+    
+        IfStatement {
+            test: Box::new(cond),
+            consequent,
+            alternate,
+        }
+    }
+    
+    
 
     fn handle_while(&self) -> Node {
         todo!()
@@ -445,7 +513,7 @@ impl Parser {
     fn handle_keyword(&self, tokens: &[Token]) -> Node {
         match tokens[0].text.as_str() {
             "let" => Node::VariableDeclaration(self.handle_assignment(tokens)),
-            "if" => self.handle_if(),
+            "if" => Node::IfStatement(self.handle_if(tokens)),
             "while" => self.handle_while(),
             "define" => self.handle_function_assignment(),
             _ => unreachable!()
@@ -459,10 +527,9 @@ impl Parser {
         while self.position < self.length - 1 {
             let start = self.position;
 
-
             match self.tokens[self.position].kind {
                 TokenKind::Keyword => {
-                    while self.tokens[self.position].kind != TokenKind::LineBreak {
+                    while self.tokens[self.position].kind != TokenKind::LineBreak && self.tokens[self.position].kind != TokenKind::EOF{
                         self.advance(1)
                     }
                     let res = self.handle_keyword(&self.tokens[start..=self.position]);
@@ -470,7 +537,7 @@ impl Parser {
                     program.program.push(res);
                 },
                 TokenKind::Number => {
-                    while self.tokens[self.position].kind != TokenKind::LineBreak {
+                    while self.tokens[self.position].kind != TokenKind::LineBreak && self.tokens[self.position].kind != TokenKind::EOF{
                         self.advance(1)
                     }
                     let res = self.handle_equation(&self.tokens[start..self.tokens.len() - 1]);
@@ -496,4 +563,3 @@ impl Parser {
         }
     }
 }
-

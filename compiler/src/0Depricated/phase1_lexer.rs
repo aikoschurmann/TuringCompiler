@@ -39,6 +39,7 @@ pub struct Lexer {
     line : usize, 
     bol : usize, //beginning of line
     keywords: HashSet<String>, // Store keywords in a HashSet
+    operators: HashSet<String>, // Store operators in a HashSet
 }
 
 impl Lexer {
@@ -50,12 +51,15 @@ impl Lexer {
             cursor : 0,
             line: 0,
             bol : 0,
-            keywords: HashSet::new()
+            keywords: HashSet::new(),
+            operators: HashSet::new()
         };
 
         // Add keywords to the HashSet
-        let keywords = ["if", "else", "while", "let", "define",];
+        let keywords = ["if", "else", "while", "let", "define"];
+        let operators = ["or", "and"];
         lexer.keywords.extend(keywords.iter().map(|s| s.to_string()));
+        lexer.operators.extend(operators.iter().map(|s| s.to_string()));
 
         lexer
     }
@@ -64,7 +68,7 @@ impl Lexer {
         let text = self.content[start..(start + length as usize)].to_string();
         let mut token = Token::default();
         token.text = text;
-        token.position.col = start - self.bol + 1;
+        token.position.col = start - self.bol;
         token.position.row = self.line;
         token.length = length;
         token.kind = kind;
@@ -117,6 +121,10 @@ impl Lexer {
         }
         let length = self.cursor - start;
         let text = self.content[start..(start + length as usize)].to_string();
+        if self.operators.contains(&text) {
+            return self.create_token(TokenKind::Operator, start, length)
+
+        }
         if self.keywords.contains(&text) {
             return self.create_token(TokenKind::Keyword, start, length)
         }
@@ -157,7 +165,11 @@ impl Lexer {
     
         // Check if past end of input EOF
         if self.cursor >= self.content_length {
-            return Token::default();
+            let mut token = Token::default();
+            token.length = 1;
+            token.position.row = self.line;
+            token.position.col = self.cursor - self.bol;
+            return  token;
         }
     
         let start = self.cursor;
@@ -182,10 +194,10 @@ impl Lexer {
                     _ => unreachable!(),
                 }
             }
-
             '+' | '-' | '*' | '/' | '=' | '<' | '>' => {
                 self.match_operator(start, current_char)
             }
+  
             
             _ => {
                 if self.is_symbol_start(current_char) {
@@ -206,6 +218,7 @@ impl Lexer {
         loop {
             let token = self.next();
             if token.kind == TokenKind::EOF {
+                tokens.push(token);
                 break;
             }
             tokens.push(token);

@@ -1,0 +1,158 @@
+{
+  "program": [
+    {
+      "VariableDeclaration": {
+        "id": {
+          "name": "a"
+        },
+        "init": {
+          "BinaryExpression": {
+            "left": {
+              "Literal": {
+                "raw": "8"
+              }
+            },
+            "right": {
+              "BinaryExpression": {
+                "left": {
+                  "Literal": {
+                    "raw": "8"
+                  }
+                },
+                "right": {
+                  "Literal": {
+                    "raw": "7"
+                  }
+                },
+                "operator": "Add"
+              }
+            },
+            "operator": "Multiply"
+          }
+        }
+      }
+    },
+    {
+      "VariableDeclaration": {
+        "id": {
+          "name": "b"
+        },
+        "init": {
+          "BinaryExpression": {
+            "left": {
+              "Literal": {
+                "raw": "8"
+              }
+            },
+            "right": {
+              "BinaryExpression": {
+                "left": {
+                  "Literal": {
+                    "raw": "9"
+                  }
+                },
+                "right": {
+                  "Literal": {
+                    "raw": "7"
+                  }
+                },
+                "operator": "Add"
+              }
+            },
+            "operator": "Multiply"
+          }
+        }
+      }
+    },
+    {
+      "VariableDeclaration": {
+        "id": {
+          "name": "x"
+        },
+        "init": {
+          "BinaryExpression": {
+            "left": {
+              "Literal": {
+                "raw": "9"
+              }
+            },
+            "right": {
+              "BinaryExpression": {
+                "left": {
+                  "Literal": {
+                    "raw": "8"
+                  }
+                },
+                "right": {
+                  "Literal": {
+                    "raw": "7"
+                  }
+                },
+                "operator": "Add"
+              }
+            },
+            "operator": "Divide"
+          }
+        }
+      }
+    },
+    {
+      "IfStatement": {
+        "test": {
+          "BinaryExpression": {
+            "left": {
+              "BinaryExpression": {
+                "left": {
+                  "Identifier": {
+                    "name": "a"
+                  }
+                },
+                "right": {
+                  "Literal": {
+                    "raw": "8"
+                  }
+                },
+                "operator": "Smaller"
+              }
+            },
+            "right": {
+              "BinaryExpression": {
+                "left": {
+                  "Identifier": {
+                    "name": "b"
+                  }
+                },
+                "right": {
+                  "Literal": {
+                    "raw": "9"
+                  }
+                },
+                "operator": "Greater"
+              }
+            },
+            "operator": "Or"
+          }
+        },
+        "consequent": [
+          {
+            "program": [
+              {
+                "VariableDeclaration": {
+                  "id": {
+                    "name": "b"
+                  },
+                  "init": {
+                    "Literal": {
+                      "raw": "8"
+                    }
+                  }
+                }
+              }
+            ]
+          }
+        ],
+        "alternate": null
+      }
+    }
+  ]
+}

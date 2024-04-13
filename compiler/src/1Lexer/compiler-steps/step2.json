@@ -1,0 +1,16 @@
+{
+  "program": [
+    {
+      "VariableDeclaration": {
+        "id": {
+          "name": "a"
+        },
+        "init": {
+          "Literal": {
+            "raw": "10"
+          }
+        }
+      }
+    }
+  ]
+}

@@ -1,0 +1,74 @@
+[
+  {
+    "kind": "Keyword",
+    "text": "let",
+    "length": 3,
+    "position": {
+      "row": 0,
+      "col": 0
+    }
+  },
+  {
+    "kind": "Symbol",
+    "text": "a",
+    "length": 1,
+    "position": {
+      "row": 0,
+      "col": 4
+    }
+  },
+  {
+    "kind": "Operator",
+    "text": "=",
+    "length": 1,
+    "position": {
+      "row": 0,
+      "col": 6
+    }
+  },
+  {
+    "kind": "Number",
+    "text": "10",
+    "length": 2,
+    "position": {
+      "row": 0,
+      "col": 8
+    }
+  },
+  {
+    "kind": "LineBreak",
+    "text": ";",
+    "length": 1,
+    "position": {
+      "row": 0,
+      "col": 10
+    }
+  },
+  {
+    "kind": "NewLine",
+    "text": "\n",
+    "length": 1,
+    "position": {
+      "row": 0,
+      "col": 11
+    }
+  },
+  {
+    "kind": "NewLine",
+    "text": "\n",
+    "length": 1,
+    "position": {
+      "row": 1,
+      "col": 0
+    }
+  },
+  {
+    "kind": "EOF",
+    "text": "",
+    "length": 0,
+    "position": {
+      "row": 2,
+      "col": 0
+    }
+  }
+]
